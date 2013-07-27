@@ -62,8 +62,7 @@ object Try_mappperdb extends App {
   val mario = new Person("Mario", nintendo)
   val luigi = new Person("Luigi", nintendo)
   val ins = tx { () => {
-    mapperDao.insert(PersonEntity, mario)
-    mapperDao.insert(PersonEntity, luigi)
+    mapperDao.insertBatch(PersonEntity, List(mario, luigi))
   } }
 
   import Query._
