@@ -9,7 +9,7 @@ import com.googlecode.mapperdao.jdbc.Transaction.{Propagation, Isolation}
 import com.googlecode.mapperdao.jdbc.Transaction
 import scala.io.Source
 import grizzled.slf4j.Logger
-
+import com.googlecode.mapperdao.{Query, QueryConfig}
 
 object Try_mappperdb extends App {
   val logger = Logger[this.type]
@@ -54,5 +54,29 @@ object Try_mappperdb extends App {
   // and select it from the database
   val selected = mapperDao.select(PersonEntity, updated.id).get
   logger.info(s"${selected.id} ${selected.name} ${selected.company.name}")
+
+  // finally, delete the row
+  mapperDao.delete(PersonEntity, selected)
+
+  val nintendo = new Company("Nintendo")
+  val mario = new Person("Mario", nintendo)
+  val luigi = new Person("Luigi", nintendo)
+  val ins = tx { () => {
+    mapperDao.insert(PersonEntity, mario)
+    mapperDao.insert(PersonEntity, luigi)
+  } }
+
+  import Query._
+  // run some queries
+  val pe=PersonEntity //alias
+  val peopleAll=queryDao.query(select from pe) // get all
+  // people is a list of Person with IntId
+  peopleAll.foreach(person => logger.info(s"<peopleAll> ${person.id}, ${person.name}, ${person.company.name}"))
+
+  // fetch only page 2 of all people
+  val peoplePagenagtion=queryDao.query(QueryConfig.pagination(2, 2),select from pe)
+  // people is a list of Person with IntId
+  peoplePagenagtion.foreach(person => logger.info(s"<peoplePagination> ${person.id}, ${person.name}, ${person.company.name}"))
+
 
 }
